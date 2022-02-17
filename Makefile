@@ -12,8 +12,15 @@ CFLAGS = -I$(INCLUDE_DIR)/ -std=c++20 -g
 SOURCE_FILES = $(shell find $(SOURCE_DIR)/ -name *.cpp)
 OBJECT_FILES = $(patsubst $(SOURCE_DIR)/%.cpp, $(OBJECT_DIR)/%.o, $(SOURCE_FILES))
 
-all: $(OBJECT_FILES) parser scanner
+.PHONY: parser scanner
+all: parser scanner $(OBJECT_FILES) 
 	$(CC) $(CFLAGS) -o $(OBJECT_DIR)/$(BINARY) $(OBJECT_FILES)
+
+parser:
+	$(BISON) -o $(SOURCE_DIR)/parser.cpp --header=$(INCLUDE_DIR)/parser.hpp $(GRAMMAR_DIR)/parser.ypp
+
+scanner:
+	$(FLEX) -o $(SOURCE_DIR)/scanner.cpp $(GRAMMAR_DIR)/scanner.lpp
 
 $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 	mkdir -p $(@D)
@@ -21,14 +28,6 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 
 $(SOURCE_DIR)/%.cpp: %.lpp
 	$(FLEX) -o$@ $<
-
-.PHONY: parser
-parser:
-	$(BISON) -o $(SOURCE_DIR)/parser.cpp --header=$(INCLUDE_DIR)/parser.hpp $(GRAMMAR_DIR)/parser.ypp
-
-.PHONY: scanner
-scanner:
-	$(FLEX) -o $(SOURCE_DIR)/scanner.cpp $(GRAMMAR_DIR)/scanner.lpp
 
 clean:
 	rm -rf $(OBJECT_DIR)/*

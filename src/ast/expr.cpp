@@ -60,7 +60,7 @@ std::ostream &operator<<(std::ostream &os, Expr *e) {
     os << e->left << "--";
     return os;
   } else if (e->kind == ExprKind::LNOT) {
-    os << "not " << e->left;
+    os << "(not " << e->left << ")";
     return os;
   } else if (e->kind == ExprKind::INDEX) {
     os << e->left << "[" << e->right << "]";
