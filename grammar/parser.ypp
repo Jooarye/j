@@ -1,0 +1,182 @@
+%skeleton "lalr1.cc" // -*- C++ -*-
+%require "3.8.2"
+%header
+
+%define api.token.raw
+
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert
+
+%code requires {
+  #include <string>
+  #include "ast.hpp"
+  class Driver;
+}
+
+// The parsing context.
+%param { Driver& drv }
+
+%locations
+
+%define parse.trace
+%define parse.error detailed
+%define parse.lac full
+
+%code {
+#include "driver.hpp"
+}
+
+%define api.location.file "../include/location.hpp"
+%define api.location.include {"location.hpp"}
+
+%define api.token.prefix {TOK_}
+%token
+  FUNC      "fn"
+  INT       "int"
+  STR       "str"
+  IF        "if"
+  ELSE      "else"
+  WHILE     "while"
+  FOR       "for"
+  RETURN    "return"
+
+  ASSIGN    "="
+  AMPERSAND "&"
+  PIPE      "|"
+  CARET     "^"
+  TILDE     "~"
+  MINUS     "-"
+  PLUS      "+"
+  STAR      "*"
+  SLASH     "/"
+  LPAREN    "("
+  RPAREN    ")"
+  COMMA     ","
+  DOT       "."
+  OBRACE    "{"
+  CBRACE    "}"
+  OBRACKET  "["
+  CBRACKET  "]"
+  SEMI      ";"
+
+  INCREMENT "++"
+  DECREMENT "--"
+
+  LESS      "<"
+  GREATER   ">"
+  LESSEQ    "<="
+  GREATEREQ ">="
+  EQUAL     "=="
+  UNEQUAL   "!="
+
+  AND       "and"
+  OR        "or"
+  NOT       "not"
+;
+
+%token <std::string> IDENTIFIER "identifier"
+%token <std::string> STRING "string"
+%token <int> INTEGER "integer"
+%token <float> FLOAT "float"
+%nterm <Decl *> decl
+%nterm <Stmt *> block stmts stmt
+%nterm <Expr *> expr
+%nterm <Type *> type
+%nterm <Param *> param
+%nterm <std::vector<Param *> *> params
+%nterm <std::vector<Expr *> *> args
+
+%printer { yyo << $$; } <*>;
+
+%%
+%start decls;
+decls:
+  %empty     {}
+| decls decl { drv.ast.push_back($2); };
+
+decl:
+  "fn" "identifier" "(" params ")" block      { $$ = Decl::newFn($2, $6, Type::newComplex(TypeKind::FUNC, Type::newAtomic(TypeKind::NIL), $4)); }
+| "fn" "identifier" "(" params ")" type block { $$ = Decl::newFn($2, $7, Type::newComplex(TypeKind::FUNC, $6, $4)); }
+| type "identifier" "=" expr ";"              { $$ = Decl::newVar($2, $4, $1); }
+| type "identifier" ";"                       { $$ = Decl::newVar($2, 0, $1); };
+
+params:
+  %empty           { $$ = new std::vector<Param *>(); }
+| param            { $$ = new std::vector<Param *>(); $$->push_back($1); }
+| params "," param { $$ = $1; $1->push_back($3); };
+
+param:
+  type "identifier" { $$ = Param::newParam($2, $1); };
+
+type:
+  type "[" "]" { $$ = Type::newArray($1); }
+| "int" { $$ = Type::newAtomic(TypeKind::INT); }
+| "str" { $$ = Type::newAtomic(TypeKind::STR); };
+
+%right "~" "=" "not" "++" "--";
+%left "==" "!=" "<" ">" "<=" ">=" "+" "-" "*" "/" "&" "|" "^" "(" ")" "and" "or" "[";
+expr:
+  "integer" { $$ = Expr::newConst($1); }
+| "string"  { $$ = Expr::newConst($1); }
+
+| "identifier" "=" expr { $$ = Expr::newBinary(ExprKind::ASSIGN, Expr::newIdent($1), $3); }
+
+| "not" expr      { $$ = Expr::newUnary(ExprKind::LNOT, $2); }
+| expr "and" expr { $$ = Expr::newBinary(ExprKind::LAND, $1, $3); }
+| expr "or" expr  { $$ = Expr::newBinary(ExprKind::LOR, $1, $3); }
+
+| expr "==" expr { $$ = Expr::newBinary(ExprKind::EQ, $1, $3); }
+| expr "!=" expr { $$ = Expr::newBinary(ExprKind::NE, $1, $3); }
+| expr "<=" expr { $$ = Expr::newBinary(ExprKind::LTEQ, $1, $3); }
+| expr ">=" expr { $$ = Expr::newBinary(ExprKind::GTEQ, $1, $3); }
+| expr "<" expr  { $$ = Expr::newBinary(ExprKind::LT, $1, $3); }
+| expr ">" expr  { $$ = Expr::newBinary(ExprKind::GT, $1, $3); }
+
+| expr "&" expr { $$ = Expr::newBinary(ExprKind::AND, $1, $3); }
+| expr "|" expr { $$ = Expr::newBinary(ExprKind::OR, $1, $3); }
+| expr "^" expr { $$ = Expr::newBinary(ExprKind::XOR, $1, $3); }
+| expr "+" expr { $$ = Expr::newBinary(ExprKind::ADD, $1, $3); }
+| expr "-" expr { $$ = Expr::newBinary(ExprKind::SUB, $1, $3); }
+| expr "*" expr { $$ = Expr::newBinary(ExprKind::MUL, $1, $3); }
+| expr "/" expr { $$ = Expr::newBinary(ExprKind::DIV, $1, $3); }
+
+| "~" expr                  { $$ = Expr::newUnary(ExprKind::NOT, $2); }
+| "identifier" "++"         { $$ = Expr::newUnary(ExprKind::INC, Expr::newIdent($1)); }
+| "identifier" "--"         { $$ = Expr::newUnary(ExprKind::DEC, Expr::newIdent($1)); }
+| "(" expr ")"              { $$ = $2; }
+| "identifier" "[" expr "]" { $$ = Expr::newBinary(ExprKind::INDEX, Expr::newIdent($1), $3); }
+| "identifier" "(" args ")" { $$ = Expr::newBinary(ExprKind::CALL, Expr::newIdent($1), Expr::newArgs($3)); }
+| "identifier"              { $$ = Expr::newIdent($1); };
+
+args:
+  %empty        { $$ = new std::vector<Expr *>(); }
+| expr          { $$ = new std::vector<Expr *>(); $$->push_back($1); }
+| args "," expr { $$ = $1; $1->push_back($3); };
+
+block:
+  "{" stmts "}" { $$ = $2; };
+
+stmts:
+  %empty     { $$ = Stmt::newBlock(); }
+| stmts stmt { $$ = $1; $$->addChild($2); };
+
+stmt:
+  decl     { $$ = Stmt::newDecl($1); }
+| expr ";" { $$ = Stmt::newExpr($1); }
+
+| "return" expr ";" { $$ = Stmt::newReturn($2); }
+
+| "if" expr block              { $$ = Stmt::newIf($2, $3, 0); }
+| "if" expr block "else" block { $$ = Stmt::newIf($2, $3, $5); }
+
+| "while" expr block { $$ = Stmt::newWhile($2, $3); }
+
+| "for" expr ";" expr ";" expr block { $$ = Stmt::newFor($2, $4, $6, $7); };
+%%
+
+void
+yy::parser::error (const location_type& l, const std::string& m)
+{
+  std::cerr << l << ": " << m << '\n';
+}
