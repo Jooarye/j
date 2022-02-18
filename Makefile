@@ -16,6 +16,13 @@ OBJECT_FILES = $(patsubst $(SOURCE_DIR)/%.cpp, $(OBJECT_DIR)/%.o, $(SOURCE_FILES
 all: parser scanner $(OBJECT_FILES) 
 	$(CC) $(CFLAGS) -o $(OBJECT_DIR)/$(BINARY) $(OBJECT_FILES)
 
+quick:
+	make parser scanner
+	make binary -j8
+
+binary: $(OBJECT_FILES) 
+	$(CC) $(CFLAGS) -o $(OBJECT_DIR)/$(BINARY) $(OBJECT_FILES)
+
 parser:
 	$(BISON) -o $(SOURCE_DIR)/parser.cpp --header=$(INCLUDE_DIR)/parser.hpp $(GRAMMAR_DIR)/parser.ypp
 

@@ -12,10 +12,13 @@ class Driver {
 public:
   Driver();
 
+  std::vector<std::string> importedFiles;
+  std::vector<std::string> handledFiles;
   std::vector<Decl *> ast;
   std::string file;
 
   int parse(const std::string &f);
+  void addImportedFile(std::string f, yy::location loc);
 
   void scan_begin();
   void scan_end();

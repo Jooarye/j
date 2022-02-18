@@ -502,39 +502,41 @@ namespace yy {
     TOK_WHILE = 8,                 // "while"
     TOK_FOR = 9,                   // "for"
     TOK_RETURN = 10,               // "return"
-    TOK_ASSIGN = 11,               // "="
-    TOK_AMPERSAND = 12,            // "&"
-    TOK_PIPE = 13,                 // "|"
-    TOK_CARET = 14,                // "^"
-    TOK_TILDE = 15,                // "~"
-    TOK_MINUS = 16,                // "-"
-    TOK_PLUS = 17,                 // "+"
-    TOK_STAR = 18,                 // "*"
-    TOK_SLASH = 19,                // "/"
-    TOK_LPAREN = 20,               // "("
-    TOK_RPAREN = 21,               // ")"
-    TOK_COMMA = 22,                // ","
-    TOK_DOT = 23,                  // "."
-    TOK_OBRACE = 24,               // "{"
-    TOK_CBRACE = 25,               // "}"
-    TOK_OBRACKET = 26,             // "["
-    TOK_CBRACKET = 27,             // "]"
-    TOK_SEMI = 28,                 // ";"
-    TOK_INCREMENT = 29,            // "++"
-    TOK_DECREMENT = 30,            // "--"
-    TOK_LESS = 31,                 // "<"
-    TOK_GREATER = 32,              // ">"
-    TOK_LESSEQ = 33,               // "<="
-    TOK_GREATEREQ = 34,            // ">="
-    TOK_EQUAL = 35,                // "=="
-    TOK_UNEQUAL = 36,              // "!="
-    TOK_AND = 37,                  // "and"
-    TOK_OR = 38,                   // "or"
-    TOK_NOT = 39,                  // "not"
-    TOK_IDENTIFIER = 40,           // "identifier"
-    TOK_STRING = 41,               // "string"
-    TOK_INTEGER = 42,              // "integer"
-    TOK_FLOAT = 43                 // "float"
+    TOK_AT = 11,                   // "@"
+    TOK_IMPORT = 12,               // "import"
+    TOK_ASSIGN = 13,               // "="
+    TOK_AMPERSAND = 14,            // "&"
+    TOK_PIPE = 15,                 // "|"
+    TOK_CARET = 16,                // "^"
+    TOK_TILDE = 17,                // "~"
+    TOK_MINUS = 18,                // "-"
+    TOK_PLUS = 19,                 // "+"
+    TOK_STAR = 20,                 // "*"
+    TOK_SLASH = 21,                // "/"
+    TOK_LPAREN = 22,               // "("
+    TOK_RPAREN = 23,               // ")"
+    TOK_COMMA = 24,                // ","
+    TOK_DOT = 25,                  // "."
+    TOK_OBRACE = 26,               // "{"
+    TOK_CBRACE = 27,               // "}"
+    TOK_OBRACKET = 28,             // "["
+    TOK_CBRACKET = 29,             // "]"
+    TOK_SEMI = 30,                 // ";"
+    TOK_INCREMENT = 31,            // "++"
+    TOK_DECREMENT = 32,            // "--"
+    TOK_LESS = 33,                 // "<"
+    TOK_GREATER = 34,              // ">"
+    TOK_LESSEQ = 35,               // "<="
+    TOK_GREATEREQ = 36,            // ">="
+    TOK_EQUAL = 37,                // "=="
+    TOK_UNEQUAL = 38,              // "!="
+    TOK_AND = 39,                  // "and"
+    TOK_OR = 40,                   // "or"
+    TOK_NOT = 41,                  // "not"
+    TOK_IDENTIFIER = 42,           // "identifier"
+    TOK_STRING = 43,               // "string"
+    TOK_INTEGER = 44,              // "integer"
+    TOK_FLOAT = 45                 // "float"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -551,7 +553,7 @@ namespace yy {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 44, ///< Number of tokens.
+        YYNTOKENS = 46, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -564,50 +566,55 @@ namespace yy {
         S_WHILE = 8,                             // "while"
         S_FOR = 9,                               // "for"
         S_RETURN = 10,                           // "return"
-        S_ASSIGN = 11,                           // "="
-        S_AMPERSAND = 12,                        // "&"
-        S_PIPE = 13,                             // "|"
-        S_CARET = 14,                            // "^"
-        S_TILDE = 15,                            // "~"
-        S_MINUS = 16,                            // "-"
-        S_PLUS = 17,                             // "+"
-        S_STAR = 18,                             // "*"
-        S_SLASH = 19,                            // "/"
-        S_LPAREN = 20,                           // "("
-        S_RPAREN = 21,                           // ")"
-        S_COMMA = 22,                            // ","
-        S_DOT = 23,                              // "."
-        S_OBRACE = 24,                           // "{"
-        S_CBRACE = 25,                           // "}"
-        S_OBRACKET = 26,                         // "["
-        S_CBRACKET = 27,                         // "]"
-        S_SEMI = 28,                             // ";"
-        S_INCREMENT = 29,                        // "++"
-        S_DECREMENT = 30,                        // "--"
-        S_LESS = 31,                             // "<"
-        S_GREATER = 32,                          // ">"
-        S_LESSEQ = 33,                           // "<="
-        S_GREATEREQ = 34,                        // ">="
-        S_EQUAL = 35,                            // "=="
-        S_UNEQUAL = 36,                          // "!="
-        S_AND = 37,                              // "and"
-        S_OR = 38,                               // "or"
-        S_NOT = 39,                              // "not"
-        S_IDENTIFIER = 40,                       // "identifier"
-        S_STRING = 41,                           // "string"
-        S_INTEGER = 42,                          // "integer"
-        S_FLOAT = 43,                            // "float"
-        S_YYACCEPT = 44,                         // $accept
-        S_decls = 45,                            // decls
-        S_decl = 46,                             // decl
-        S_params = 47,                           // params
-        S_param = 48,                            // param
-        S_type = 49,                             // type
-        S_expr = 50,                             // expr
-        S_args = 51,                             // args
-        S_block = 52,                            // block
-        S_stmts = 53,                            // stmts
-        S_stmt = 54                              // stmt
+        S_AT = 11,                               // "@"
+        S_IMPORT = 12,                           // "import"
+        S_ASSIGN = 13,                           // "="
+        S_AMPERSAND = 14,                        // "&"
+        S_PIPE = 15,                             // "|"
+        S_CARET = 16,                            // "^"
+        S_TILDE = 17,                            // "~"
+        S_MINUS = 18,                            // "-"
+        S_PLUS = 19,                             // "+"
+        S_STAR = 20,                             // "*"
+        S_SLASH = 21,                            // "/"
+        S_LPAREN = 22,                           // "("
+        S_RPAREN = 23,                           // ")"
+        S_COMMA = 24,                            // ","
+        S_DOT = 25,                              // "."
+        S_OBRACE = 26,                           // "{"
+        S_CBRACE = 27,                           // "}"
+        S_OBRACKET = 28,                         // "["
+        S_CBRACKET = 29,                         // "]"
+        S_SEMI = 30,                             // ";"
+        S_INCREMENT = 31,                        // "++"
+        S_DECREMENT = 32,                        // "--"
+        S_LESS = 33,                             // "<"
+        S_GREATER = 34,                          // ">"
+        S_LESSEQ = 35,                           // "<="
+        S_GREATEREQ = 36,                        // ">="
+        S_EQUAL = 37,                            // "=="
+        S_UNEQUAL = 38,                          // "!="
+        S_AND = 39,                              // "and"
+        S_OR = 40,                               // "or"
+        S_NOT = 41,                              // "not"
+        S_IDENTIFIER = 42,                       // "identifier"
+        S_STRING = 43,                           // "string"
+        S_INTEGER = 44,                          // "integer"
+        S_FLOAT = 45,                            // "float"
+        S_YYACCEPT = 46,                         // $accept
+        S_program = 47,                          // program
+        S_directives = 48,                       // directives
+        S_directive = 49,                        // directive
+        S_decls = 50,                            // decls
+        S_decl = 51,                             // decl
+        S_params = 52,                           // params
+        S_param = 53,                            // param
+        S_type = 54,                             // type
+        S_expr = 55,                             // expr
+        S_args = 56,                             // args
+        S_block = 57,                            // block
+        S_stmts = 58,                            // stmts
+        S_stmt = 59                              // stmt
       };
     };
 
@@ -1265,6 +1272,36 @@ switch (yykind)
       make_RETURN (const location_type& l)
       {
         return symbol_type (token::TOK_RETURN, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_AT (location_type l)
+      {
+        return symbol_type (token::TOK_AT, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_AT (const location_type& l)
+      {
+        return symbol_type (token::TOK_AT, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_IMPORT (location_type l)
+      {
+        return symbol_type (token::TOK_IMPORT, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_IMPORT (const location_type& l)
+      {
+        return symbol_type (token::TOK_IMPORT, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -2106,9 +2143,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 335,     ///< Last index in yytable_.
-      yynnts_ = 11,  ///< Number of nonterminal symbols.
-      yyfinal_ = 2 ///< Termination state number.
+      yylast_ = 336,     ///< Last index in yytable_.
+      yynnts_ = 14,  ///< Number of nonterminal symbols.
+      yyfinal_ = 3 ///< Termination state number.
     };
 
 
@@ -2316,7 +2353,7 @@ switch (yykind)
 
 
 } // yy
-#line 2320 "include/parser.hpp"
+#line 2357 "include/parser.hpp"
 
 
 

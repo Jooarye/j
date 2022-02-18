@@ -2,11 +2,18 @@
 #include "ast/decl.hpp"
 #include "driver.hpp"
 #include <iostream>
+#include <string>
 
 int main(int argc, char *argv[]) {
   Driver drv;
 
   if (!drv.parse("spec.j")) {
+    std::cout << "=== INCLUDED FILES ===" << std::endl;
+    for (std::string file : drv.importedFiles) {
+      std::cout << file << std::endl;
+    }
+
+    std::cout << "======== AST =========" << std::endl;
     for (Decl *d : drv.ast) {
       std::cout << d;
     }

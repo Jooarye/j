@@ -41,6 +41,9 @@
   FOR       "for"
   RETURN    "return"
 
+  AT        "@"
+  IMPORT    "import"
+
   ASSIGN    "="
   AMPERSAND "&"
   PIPE      "|"
@@ -90,7 +93,17 @@
 %printer { yyo << $$; } <*>;
 
 %%
-%start decls;
+%start program;
+program: 
+  directives decls {};
+
+directives:
+  %empty {}
+| directives directive {};
+
+directive:
+  "@" "import" "string" ";" { drv.addImportedFile($3, @1); };
+
 decls:
   %empty     {}
 | decls decl { drv.ast.push_back($2); };
@@ -175,8 +188,6 @@ stmt:
 | "for" expr ";" expr ";" expr block { $$ = Stmt::newFor($2, $4, $6, $7); };
 %%
 
-void
-yy::parser::error (const location_type& l, const std::string& m)
-{
-  std::cerr << l << ": " << m << '\n';
+void yy::parser::error (const location_type& l, const std::string& m) {
+  std::cerr << l << ": " << m << std::endl;
 }

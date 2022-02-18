@@ -1,9 +1,11 @@
-fn main(int argc, str[] argv) int {
-  if argc != 2 {
-    print("usage: test <name>\n");
-  } else {
-    print("Yay, hello ", argv[1], ", how are you?\n");
+// very unsafe function
+fn stoi(str num) int {
+  int result = 0;
+  int idx;
+
+  for idx = 0; idx < len(num); idx++ {
+    result = result + pow(10, idx) * (num[idx] - 48);
   }
 
-  return 0;
+  return result;
 }

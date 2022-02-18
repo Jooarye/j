@@ -1,3 +1,5 @@
+@import "simple.j";
+
 fn main(int argc, str[] argv) int {
   if argc != 2 {
     print("usage: prog <num>\n");
