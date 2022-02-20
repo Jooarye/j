@@ -6,7 +6,7 @@ Fasm64::Fasm64(std::string file) : Backend(file) {
   this->temp = "/tmp/temp.asm";
 }
 
-void Fasm64::generate(std::vector<Decl *> *ast) {
+void Fasm64::generate(Decl *ast) {
   std::ofstream out(this->temp);
 
   // Code gen

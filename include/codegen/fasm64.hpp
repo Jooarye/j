@@ -7,7 +7,7 @@ class Fasm64 : public Backend {
 public:
   Fasm64(std::string);
 
-  void generate(std::vector<Decl *> *);
+  void generate(Decl *);
   void compile();
 
 private:

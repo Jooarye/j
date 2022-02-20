@@ -1,7 +1,4 @@
-fn len(str a) int;
-fn pow(int a, int b) int;
-fn prints(str a);
-fn printi(int a);
+@import "test.j";
 
 // very unsafe function
 fn stoi(str num) int {

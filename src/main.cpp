@@ -66,9 +66,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (!fail) {
-      // Backend *be = new Fasm64(c.ouput);
-      // be->generate(&drv.ast);
-      // be->compile();
+      Backend *be = new Fasm64(c.ouput);
+      be->generate(drv.ast);
+      be->compile();
 
       std::cout << drv.ast << std::endl;
 

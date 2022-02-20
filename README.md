@@ -18,5 +18,6 @@ fn main(int argc, str[] argv) int {
   return 0;
 }
 ```
+<img src="images/code.png" />
 ## Language Reference
 Coming soon ...
