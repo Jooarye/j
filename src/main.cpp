@@ -70,8 +70,6 @@ int main(int argc, char *argv[]) {
       be->generate(drv.ast);
       be->compile();
 
-      std::cout << drv.ast << std::endl;
-
       std::cout << "jc: note: compilation finished" << std::endl;
       exit(0);
     }
