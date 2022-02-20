@@ -1,45 +1,81 @@
 #include "ast.hpp"
 #include "ast/decl.hpp"
+#include "codegen/backend.hpp"
+#include "codegen/fasm_x86_64.hpp"
 #include "driver.hpp"
 #include "message.hpp"
 #include <iostream>
 #include <string>
 
+struct Conf {
+  std::string input;
+  std::string ouput = "a.out";
+
+  bool silent = false;
+};
+
+bool cli(Conf &c, int argc, char *argv[]) {
+  for (int i = 1; i < argc; i++) {
+    std::string arg = argv[i];
+
+    if (arg.starts_with("-")) {
+      if ((arg == "-o" || arg == "--out") && i + 1 < argc) {
+        c.ouput = argv[i++];
+      } else if (arg == "-s" || arg == "--silent") {
+        c.silent = true;
+      } else {
+        std::cerr << "jc: error: unknown flag: " << arg << std::endl;
+      }
+    } else {
+      c.input = arg;
+      return true;
+    }
+  }
+
+  // print help since parsing failed
+  std::cout << "usage: jc [OPTIONS] file" << std::endl
+            << std::endl
+            << "OPTIONS:" << std::endl
+            << "  -o, --output: specify the output file" << std::endl
+            << "  -s, --silent: stop printing notes" << std::endl;
+
+  return false;
+}
+
 int main(int argc, char *argv[]) {
+  Conf c;
+
+  if (!cli(c, argc, argv))
+    exit(1);
+
   Driver drv;
 
-  if (!drv.parse("spec.j")) {
+  if (!drv.parse(c.input)) {
     drv.resolve();
     drv.typeCheck();
 
+    bool fail = false;
     for (Message m : messages) {
+      if (c.silent && m.kind == MessageKind::NOTE)
+        continue;
+
+      if (m.kind == MessageKind::ERROR)
+        fail = true;
+
       std::cerr << m;
     }
 
-    std::cout << "======== AST =========" << std::endl;
-    for (Decl *d : drv.ast) {
-      std::cout << d;
+    if (!fail) {
+      Backend *be = new Fasm_x86_64(c.ouput);
+      be->generate(&drv.ast);
+      be->compile();
+
+      std::cout << "jc: note: compilation finished" << std::endl;
+      exit(0);
     }
-  } else {
-    std::cout << "parsing failed!" << '\n';
   }
 
-  return 0;
+  std::cout << "jc: error: compilation failed" << '\n';
+
+  return 2;
 }
-
-/* int main(int argc, char *argv[]) {
-  Expr *c1 = Expr::newConst(123);
-  Expr *c2 = Expr::newConst(3);
-  Expr *e = Expr::newBinary(ExprKind::ADD, c1, c2);
-
-  Stmt *s = Stmt::newReturn(e);
-  Stmt *b = Stmt::newBlock();
-  b->addChild(s);
-
-  Decl *d = Decl::newFn("test", b,
-                        Type::newComplex(TypeKind::FUNC,
-                                         Type::newAtomic(TypeKind::INT),
-                                         new std::vector<Param *>()));
-
-  std::cout << d->stringify() << std::endl;
-} */

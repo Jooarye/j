@@ -1,5 +1,6 @@
 #include "message.hpp"
 #include "location.hpp"
+#include <filesystem>
 
 std::vector<Message> messages;
 
@@ -22,13 +23,23 @@ void Message::error(std::string msg) {
 }
 
 void Message::note(std::string msg) {
-  messages.push_back(Message(MessageKind::ERROR, msg, yy::location()));
+  messages.push_back(Message(MessageKind::NOTE, msg, yy::location()));
 }
 
 std::ostream &operator<<(std::ostream &os, Message &e) {
   yy::position begin = e.loc.begin;
 
-  os << begin.filename->c_str() << ":" << begin.line << ":" << begin.column
-     << ": error: " << e.message << std::endl;
+  if (!e.loc.begin.filename) {
+    os << "jc: " << (e.kind == MessageKind::ERROR ? "error" : "note") << ": "
+       << e.message << std::endl;
+  } else {
+    std::string fn = std::filesystem::relative(*begin.filename,
+                                               std::filesystem::current_path());
+
+    os << fn << ":" << begin.line << ":" << begin.column << ": "
+       << (e.kind == MessageKind::ERROR ? "error" : "note") << ": " << e.message
+       << std::endl;
+  }
+
   return os;
 }

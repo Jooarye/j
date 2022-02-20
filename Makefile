@@ -12,13 +12,14 @@ CFLAGS = -I$(INCLUDE_DIR)/ -std=c++20 -g
 SOURCE_FILES = $(shell find $(SOURCE_DIR)/ -name *.cpp)
 OBJECT_FILES = $(patsubst $(SOURCE_DIR)/%.cpp, $(OBJECT_DIR)/%.o, $(SOURCE_FILES))
 
+quick:
+	make --no-print-directory parser scanner
+	make --no-print-directory binary -j8
+	
 .PHONY: parser scanner
 all: parser scanner $(OBJECT_FILES) 
 	$(CC) $(CFLAGS) -o $(OBJECT_DIR)/$(BINARY) $(OBJECT_FILES)
 
-quick:
-	make --no-print-directory parser scanner
-	make --no-print-directory binary -j8
 
 binary: $(OBJECT_FILES) 
 	$(CC) $(CFLAGS) -o $(OBJECT_DIR)/$(BINARY) $(OBJECT_FILES)
