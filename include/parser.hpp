@@ -410,13 +410,16 @@ namespace yy {
     /// An auxiliary type to compute the largest semantic type.
     union union_type
     {
+      // decls
       // decl
       char dummy1[sizeof (Decl *)];
 
       // expr
       // expr_id
+      // args
       char dummy2[sizeof (Expr *)];
 
+      // params
       // param
       char dummy3[sizeof (Param *)];
 
@@ -437,12 +440,6 @@ namespace yy {
       // "identifier"
       // "string"
       char dummy8[sizeof (std::string)];
-
-      // args
-      char dummy9[sizeof (std::vector<Expr *> *)];
-
-      // params
-      char dummy10[sizeof (std::vector<Param *> *)];
     };
 
     /// The size of the largest semantic type.
@@ -653,15 +650,18 @@ namespace yy {
       {
         switch (this->kind ())
     {
+      case symbol_kind::S_decls: // decls
       case symbol_kind::S_decl: // decl
         value.move< Decl * > (std::move (that.value));
         break;
 
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_expr_id: // expr_id
+      case symbol_kind::S_args: // args
         value.move< Expr * > (std::move (that.value));
         break;
 
+      case symbol_kind::S_params: // params
       case symbol_kind::S_param: // param
         value.move< Param * > (std::move (that.value));
         break;
@@ -687,14 +687,6 @@ namespace yy {
       case symbol_kind::S_IDENTIFIER: // "identifier"
       case symbol_kind::S_STRING: // "string"
         value.move< std::string > (std::move (that.value));
-        break;
-
-      case symbol_kind::S_args: // args
-        value.move< std::vector<Expr *> * > (std::move (that.value));
-        break;
-
-      case symbol_kind::S_params: // params
-        value.move< std::vector<Param *> * > (std::move (that.value));
         break;
 
       default:
@@ -832,34 +824,6 @@ namespace yy {
       {}
 #endif
 
-#if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, std::vector<Expr *> *&& v, location_type&& l)
-        : Base (t)
-        , value (std::move (v))
-        , location (std::move (l))
-      {}
-#else
-      basic_symbol (typename Base::kind_type t, const std::vector<Expr *> *& v, const location_type& l)
-        : Base (t)
-        , value (v)
-        , location (l)
-      {}
-#endif
-
-#if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, std::vector<Param *> *&& v, location_type&& l)
-        : Base (t)
-        , value (std::move (v))
-        , location (std::move (l))
-      {}
-#else
-      basic_symbol (typename Base::kind_type t, const std::vector<Param *> *& v, const location_type& l)
-        : Base (t)
-        , value (v)
-        , location (l)
-      {}
-#endif
-
       /// Destroy the symbol.
       ~basic_symbol ()
       {
@@ -884,15 +848,18 @@ namespace yy {
         // Value type destructor.
 switch (yykind)
     {
+      case symbol_kind::S_decls: // decls
       case symbol_kind::S_decl: // decl
         value.template destroy< Decl * > ();
         break;
 
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_expr_id: // expr_id
+      case symbol_kind::S_args: // args
         value.template destroy< Expr * > ();
         break;
 
+      case symbol_kind::S_params: // params
       case symbol_kind::S_param: // param
         value.template destroy< Param * > ();
         break;
@@ -918,14 +885,6 @@ switch (yykind)
       case symbol_kind::S_IDENTIFIER: // "identifier"
       case symbol_kind::S_STRING: // "string"
         value.template destroy< std::string > ();
-        break;
-
-      case symbol_kind::S_args: // args
-        value.template destroy< std::vector<Expr *> * > ();
-        break;
-
-      case symbol_kind::S_params: // params
-        value.template destroy< std::vector<Param *> * > ();
         break;
 
       default:
@@ -2147,7 +2106,7 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 307,     ///< Last index in yytable_.
+      yylast_ = 332,     ///< Last index in yytable_.
       yynnts_ = 15,  ///< Number of nonterminal symbols.
       yyfinal_ = 3 ///< Termination state number.
     };
@@ -2174,15 +2133,18 @@ switch (yykind)
   {
     switch (this->kind ())
     {
+      case symbol_kind::S_decls: // decls
       case symbol_kind::S_decl: // decl
         value.copy< Decl * > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_expr_id: // expr_id
+      case symbol_kind::S_args: // args
         value.copy< Expr * > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_params: // params
       case symbol_kind::S_param: // param
         value.copy< Param * > (YY_MOVE (that.value));
         break;
@@ -2208,14 +2170,6 @@ switch (yykind)
       case symbol_kind::S_IDENTIFIER: // "identifier"
       case symbol_kind::S_STRING: // "string"
         value.copy< std::string > (YY_MOVE (that.value));
-        break;
-
-      case symbol_kind::S_args: // args
-        value.copy< std::vector<Expr *> * > (YY_MOVE (that.value));
-        break;
-
-      case symbol_kind::S_params: // params
-        value.copy< std::vector<Param *> * > (YY_MOVE (that.value));
         break;
 
       default:
@@ -2249,15 +2203,18 @@ switch (yykind)
     super_type::move (s);
     switch (this->kind ())
     {
+      case symbol_kind::S_decls: // decls
       case symbol_kind::S_decl: // decl
         value.move< Decl * > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_expr_id: // expr_id
+      case symbol_kind::S_args: // args
         value.move< Expr * > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_params: // params
       case symbol_kind::S_param: // param
         value.move< Param * > (YY_MOVE (s.value));
         break;
@@ -2283,14 +2240,6 @@ switch (yykind)
       case symbol_kind::S_IDENTIFIER: // "identifier"
       case symbol_kind::S_STRING: // "string"
         value.move< std::string > (YY_MOVE (s.value));
-        break;
-
-      case symbol_kind::S_args: // args
-        value.move< std::vector<Expr *> * > (YY_MOVE (s.value));
-        break;
-
-      case symbol_kind::S_params: // params
-        value.move< std::vector<Param *> * > (YY_MOVE (s.value));
         break;
 
       default:
@@ -2359,7 +2308,7 @@ switch (yykind)
 
 
 } // yy
-#line 2363 "include/parser.hpp"
+#line 2312 "include/parser.hpp"
 
 
 

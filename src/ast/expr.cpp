@@ -13,13 +13,12 @@
 #include <vector>
 
 Expr::Expr(ExprKind kind, Expr *left, Expr *right, std::string string,
-           uint64_t integer, std::vector<Expr *> *args, yy::location loc) {
+           uint64_t integer, yy::location loc) {
   this->kind = kind;
   this->left = left;
   this->right = right;
   this->string = string;
   this->integer = integer;
-  this->args = args;
   this->loc = loc;
   this->loc.begin.filename = new std::string(*this->loc.begin.filename);
   this->loc.end.filename = new std::string(*this->loc.end.filename);
@@ -27,27 +26,34 @@ Expr::Expr(ExprKind kind, Expr *left, Expr *right, std::string string,
 
 Expr *Expr::newBinary(ExprKind kind, Expr *left, Expr *right,
                       yy::location loc) {
-  return new Expr(kind, left, right, "", 0, 0, loc);
+  return new Expr(kind, left, right, "", 0, loc);
 }
 
 Expr *Expr::newUnary(ExprKind kind, Expr *left, yy::location loc) {
-  return new Expr(kind, left, 0, "", 0, 0, loc);
+  return new Expr(kind, left, 0, "", 0, loc);
 }
 
 Expr *Expr::newConst(std::string string, yy::location loc) {
-  return new Expr(ExprKind::STR, 0, 0, string, 0, 0, loc);
+  return new Expr(ExprKind::STR, 0, 0, string, 0, loc);
 }
 
 Expr *Expr::newConst(uint64_t integer, yy::location loc) {
-  return new Expr(ExprKind::INT, 0, 0, "", integer, 0, loc);
+  return new Expr(ExprKind::INT, 0, 0, "", integer, loc);
 }
 
 Expr *Expr::newIdent(std::string string, yy::location loc) {
-  return new Expr(ExprKind::ID, 0, 0, string, 0, 0, loc);
+  return new Expr(ExprKind::ID, 0, 0, string, 0, loc);
 }
 
-Expr *Expr::newArgs(std::vector<Expr *> *args, yy::location loc) {
-  return new Expr(ExprKind::ARGS, 0, 0, "", 0, args, loc);
+Expr *Expr::newArg(Expr *e, yy::location loc) {
+  return new Expr(ExprKind::ARG, e, 0, "", 0, loc);
+}
+
+void Expr::add(Expr *e) {
+  if (!this->right)
+    this->right = e;
+  else
+    this->right->add(e);
 }
 
 void Expr::resolve() {
@@ -63,11 +69,6 @@ void Expr::resolve() {
 
   if (this->right)
     this->right->resolve();
-
-  if (this->args)
-    for (Expr *e : *this->args) {
-      e->resolve();
-    }
 }
 
 Type *Expr::typeCheck() {
@@ -121,25 +122,24 @@ Type *Expr::typeCheck() {
       return Type::newAtomic(TypeKind::NIL);
     }
 
-    if (this->right->args->size() != this->left->sym->type->params->size()) {
+    Param *p = this->left->sym->type->params;
+    Expr *a = this->right;
+
+    while (p && a) {
+      yy::location pos = a->loc;
+      Type *at = a->left->typeCheck();
+      Type *pt = p->type;
+
+      if (!at->isEqual(pt))
+        Message::error("invalid type for argument", pos);
+
+      p = p->next;
+      a = a->right;
+    }
+
+    if (a || p)
       Message::error("invalid amount of arguments for function call",
                      this->loc);
-
-      return this->left->sym->type->subType;
-    }
-
-    std::vector<Param *> params = *this->left->sym->type->params;
-    std::vector<Expr *> args = *this->right->args;
-
-    for (int idx = 0; idx < args.size(); idx++) {
-      yy::location p = args[idx]->loc;
-      Type *at = args[idx]->typeCheck();
-      Type *pt = params[idx]->type;
-
-      if (!at->isEqual(pt)) {
-        Message::error("invalid type for argument", p);
-      }
-    }
 
     return this->left->sym->type->subType;
   }
@@ -222,8 +222,12 @@ std::ostream &operator<<(std::ostream &os, Expr *e) {
   } else if (e->kind == ExprKind::CALL) {
     os << e->left << "(" << e->right << ")";
     return os;
-  } else if (e->kind == ExprKind::ARGS) {
-    os << e->args;
+  } else if (e->kind == ExprKind::ARG) {
+    os << e->left;
+
+    if (e->right)
+      os << ", " << e->right;
+
     return os;
   }
 
@@ -286,20 +290,6 @@ std::ostream &operator<<(std::ostream &os, Expr *e) {
   }
 
   os << e->right << ")";
-
-  return os;
-}
-
-std::ostream &operator<<(std::ostream &os, std::vector<Expr *> *l) {
-  bool first = true;
-
-  for (Expr *e : *l) {
-    if (!first)
-      os << ", ";
-
-    first = false;
-    os << e;
-  }
 
   return os;
 }

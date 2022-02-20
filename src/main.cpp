@@ -1,7 +1,7 @@
 #include "ast.hpp"
 #include "ast/decl.hpp"
 #include "codegen/backend.hpp"
-#include "codegen/fasm_x86_64.hpp"
+#include "codegen/fasm64.hpp"
 #include "driver.hpp"
 #include "message.hpp"
 #include <iostream>
@@ -66,9 +66,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (!fail) {
-      Backend *be = new Fasm_x86_64(c.ouput);
-      be->generate(&drv.ast);
-      be->compile();
+      // Backend *be = new Fasm64(c.ouput);
+      // be->generate(&drv.ast);
+      // be->compile();
+
+      std::cout << drv.ast << std::endl;
 
       std::cout << "jc: note: compilation finished" << std::endl;
       exit(0);

@@ -17,12 +17,15 @@ public:
   static Param *newParam(std::string, Type *);
 
   void resolve();
+  void add(Param *);
 
   bool isEqual(Param *);
 
   std::string name;
   Type *type;
   Symbol *sym;
+
+  Param *next;
 };
 
 enum class TypeKind {
@@ -35,23 +38,22 @@ enum class TypeKind {
 
 class Type {
 public:
-  Type(TypeKind, Type *, std::vector<Param *> *);
+  Type(TypeKind, Type *, Param *);
 
   static Type *newAtomic(TypeKind);
   static Type *newArray(Type *);
-  static Type *newComplex(TypeKind, Type *, std::vector<Param *> *);
+  static Type *newComplex(TypeKind, Type *, Param *);
 
   bool isEqual(Type *);
   bool isAtomic();
 
   TypeKind kind;
   Type *subType;
-  std::vector<Param *> *params;
+  Param *params;
 };
 
 std::ostream &operator<<(std::ostream &, Type *);
 std::ostream &operator<<(std::ostream &, Param *);
-std::ostream &operator<<(std::ostream &, std::vector<Param *> *);
 
 enum class SymbolKind {
   LOCAL,

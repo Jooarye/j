@@ -15,7 +15,7 @@ public:
 
   std::vector<std::string> importedFiles;
   std::vector<std::string> handledFiles;
-  std::vector<Decl *> ast;
+  Decl *ast;
   std::string file;
 
   int parse(const std::string &f);

@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-Type::Type(TypeKind kind, Type *subType, std::vector<Param *> *params) {
+Type::Type(TypeKind kind, Type *subType, Param *params) {
   this->kind = kind;
   this->subType = subType;
   this->params = params;
@@ -17,8 +17,7 @@ Type *Type::newAtomic(TypeKind kind) { return new Type(kind, 0, 0); }
 
 Type *Type::newArray(Type *type) { return new Type(TypeKind::ARRAY, type, 0); }
 
-Type *Type::newComplex(TypeKind kind, Type *subType,
-                       std::vector<Param *> *params) {
+Type *Type::newComplex(TypeKind kind, Type *subType, Param *params) {
   return new Type(kind, subType, params);
 }
 
@@ -29,16 +28,16 @@ bool Type::isEqual(Type *t) {
     } else if (this->kind == TypeKind::ARRAY && t->kind == TypeKind::ARRAY) {
       return this->subType->isEqual(t->subType);
     } else if (this->kind == TypeKind::FUNC && t->kind == TypeKind::FUNC) {
-      std::vector<Param *> a = *this->params;
-      std::vector<Param *> b = *t->params;
+      Param *a = this->params;
+      Param *b = t->params;
 
-      if (a.size() != b.size())
-        return false;
-
-      for (int idx = 0; idx < a.size(); idx++) {
-        if (!(a[idx]->isEqual(b[idx])))
+      while (a && b) {
+        if (!a->isEqual(b))
           return false;
       }
+
+      if (a || b)
+        return false;
 
       return this->subType->isEqual(t->subType);
     }
@@ -59,6 +58,13 @@ Param *Param::newParam(std::string name, Type *type) {
   return new Param(name, type);
 }
 
+void Param::add(Param *p) {
+  if (!this->next)
+    this->next = p;
+  else
+    this->next->add(p);
+}
+
 bool Param::isEqual(Param *p) {
   return p->name == this->name && p->type->isEqual(this->type);
 }
@@ -66,6 +72,9 @@ bool Param::isEqual(Param *p) {
 void Param::resolve() {
   this->sym = Symbol::newSymbol(SymbolKind::PARAM, this->type, this->name);
   scopeBind(this->name, this->sym);
+
+  if (this->next)
+    this->next->resolve();
 }
 
 std::ostream &operator<<(std::ostream &os, Type *t) {
@@ -94,21 +103,6 @@ std::ostream &operator<<(std::ostream &os, Type *t) {
 
 std::ostream &operator<<(std::ostream &os, Param *p) {
   os << p->type << " " << p->name;
-  return os;
-}
-
-std::ostream &operator<<(std::ostream &os, std::vector<Param *> *l) {
-  bool first = true;
-
-  for (Param *p : *l) {
-    if (!first) {
-      os << ", ";
-    }
-
-    os << p;
-    first = false;
-  }
-
   return os;
 }
 

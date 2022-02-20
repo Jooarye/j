@@ -21,11 +21,16 @@ public:
   void resolve();
   void typeCheck();
 
+  void add(Decl *);
+
   DeclKind kind;
+
   std::string name;
   Stmt *body;
   Expr *value;
   Type *type;
+  Decl *next;
+
   Symbol *sym;
 
   yy::location loc;

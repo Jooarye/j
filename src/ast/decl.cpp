@@ -25,6 +25,13 @@ Decl *Decl::newVar(std::string name, Expr *value, Type *type,
   return new Decl(DeclKind::VAR, name, 0, value, type, loc);
 }
 
+void Decl::add(Decl *n) {
+  if (!this->next)
+    this->next = n;
+  else
+    this->next->add(n);
+}
+
 void Decl::resolve() {
   this->sym = Symbol::newSymbol(scopeLevel() == 1 ? SymbolKind::GLOBAL
                                                   : SymbolKind::LOCAL,
@@ -34,9 +41,7 @@ void Decl::resolve() {
     scopeBind(this->name, this->sym);
     scopeEnter();
 
-    for (Param *p : *this->type->params) {
-      p->resolve();
-    }
+    this->type->params->resolve();
 
     if (this->body)
       this->body->resolve();
@@ -48,6 +53,9 @@ void Decl::resolve() {
 
     scopeBind(this->name, this->sym);
   }
+
+  if (this->next)
+    this->next->resolve();
 }
 
 void Decl::typeCheck() {
@@ -67,6 +75,9 @@ void Decl::typeCheck() {
     if (!this->type->isEqual(vt))
       Message::error("type missmatch for variable declaration", this->loc);
   }
+
+  if (this->next)
+    this->next->typeCheck();
 }
 
 std::ostream &operator<<(std::ostream &os, Decl *d) {
@@ -90,6 +101,9 @@ std::ostream &operator<<(std::ostream &os, Decl *d) {
 
     os << ";\n";
   }
+
+  if (d->next)
+    os << d->next;
 
   return os;
 }

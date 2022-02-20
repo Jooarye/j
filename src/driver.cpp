@@ -22,15 +22,17 @@ int Driver::parse(const std::string &f) {
 
   scan_end();
 
-  std::reverse(this->ast.begin(), this->ast.end());
   for (std::string ifile : this->importedFiles) {
     if (std::find(this->handledFiles.begin(), this->handledFiles.end(),
                   ifile) != this->handledFiles.end())
       continue;
 
+    Decl *cur = this->ast;
+
     res |= this->parse(ifile);
+
+    this->ast->add(cur);
   }
-  std::reverse(this->ast.begin(), this->ast.end());
 
   return res;
 }
@@ -38,18 +40,12 @@ int Driver::parse(const std::string &f) {
 void Driver::resolve() {
   scopeEnter();
 
-  for (Decl *d : this->ast) {
-    d->resolve();
-  }
+  this->ast->resolve();
 
   scopeExit();
 }
 
-void Driver::typeCheck() {
-  for (Decl *d : this->ast) {
-    d->typeCheck();
-  }
-}
+void Driver::typeCheck() { this->ast->typeCheck(); }
 
 void Driver::addImportedFile(std::string f, yy::location loc) {
   if (f.starts_with('/')) {

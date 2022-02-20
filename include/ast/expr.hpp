@@ -16,7 +16,7 @@ enum class ExprKind {
   INT, // 12, 23, -23
   STR, // "abcdef"
 
-  ARGS, // ("asd", 12)
+  ARG, // ("asd", 12)
 
   // Mathematical
   ADD, // +
@@ -53,24 +53,22 @@ enum class ExprKind {
 
 class Expr {
 public:
-  Expr(ExprKind, Expr *, Expr *, std::string, uint64_t, std::vector<Expr *> *,
-       yy::location);
+  Expr(ExprKind, Expr *, Expr *, std::string, uint64_t, yy::location);
 
   static Expr *newBinary(ExprKind, Expr *, Expr *, yy::location);
   static Expr *newUnary(ExprKind, Expr *, yy::location);
   static Expr *newConst(std::string, yy::location);
   static Expr *newConst(uint64_t, yy::location);
   static Expr *newIdent(std::string, yy::location);
-  static Expr *newArgs(std::vector<Expr *> *, yy::location);
+  static Expr *newArg(Expr *, yy::location);
 
   void resolve();
+  void add(Expr *);
   Type *typeCheck();
 
   ExprKind kind;
   Expr *left;
   Expr *right;
-
-  std::vector<Expr *> *args;
 
   uint64_t integer;
   std::string string;
@@ -81,4 +79,3 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &, Expr *);
-std::ostream &operator<<(std::ostream &, std::vector<Expr *> *);

@@ -1,58 +1,64 @@
 #include "ast/stmt.hpp"
 #include <assert.h>
 
-Stmt::Stmt(StmtKind kind, Expr *expr, Expr *init, Expr *next, Decl *decl,
-           Stmt *cons, Stmt *alter, yy::location loc) {
+Stmt::Stmt(StmtKind kind, Expr *expr, Expr *init, Expr *nextExpr, Decl *decl,
+           Stmt *cons, Stmt *alter, Stmt *next, yy::location loc) {
   this->kind = kind;
   this->expr = expr;
   this->init = init;
-  this->next = next;
+  this->nextExpr = nextExpr;
   this->decl = decl;
   this->consequence = cons;
   this->alternative = alter;
   this->loc = loc;
   this->loc.begin.filename = new std::string(*this->loc.begin.filename);
   this->loc.end.filename = new std::string(*this->loc.end.filename);
+  this->next = next;
 }
 
 Stmt *Stmt::newExpr(Expr *expr, yy::location loc) {
-  return new Stmt(StmtKind::EXPR, expr, 0, 0, 0, 0, 0, loc);
+  return new Stmt(StmtKind::EXPR, expr, 0, 0, 0, 0, 0, 0, loc);
 }
 
 Stmt *Stmt::newDecl(Decl *decl, yy::location loc) {
-  return new Stmt(StmtKind::DECL, 0, 0, 0, decl, 0, 0, loc);
+  return new Stmt(StmtKind::DECL, 0, 0, 0, decl, 0, 0, 0, loc);
 }
 
-Stmt *Stmt::newBlock(yy::location loc) {
-  return new Stmt(StmtKind::BLOCK, 0, 0, 0, 0, 0, 0, loc);
+Stmt *Stmt::newBlock(Stmt *n, yy::location loc) {
+  return new Stmt(StmtKind::BLOCK, 0, 0, 0, 0, 0, 0, n, loc);
 }
 
 Stmt *Stmt::newIf(Expr *expr, Stmt *cons, Stmt *alter, yy::location loc) {
-  return new Stmt(StmtKind::IF, expr, 0, 0, 0, cons, alter, loc);
+  return new Stmt(StmtKind::IF, expr, 0, 0, 0, cons, alter, 0, loc);
 }
 
 Stmt *Stmt::newWhile(Expr *expr, Stmt *cons, yy::location loc) {
-  return new Stmt(StmtKind::WHILE, expr, 0, 0, 0, cons, 0, loc);
+  return new Stmt(StmtKind::WHILE, expr, 0, 0, 0, cons, 0, 0, loc);
 }
 
 Stmt *Stmt::newFor(Expr *init, Expr *expr, Expr *next, Stmt *body,
                    yy::location loc) {
-  return new Stmt(StmtKind::FOR, expr, init, next, 0, body, 0, loc);
+  return new Stmt(StmtKind::FOR, expr, init, next, 0, body, 0, 0, loc);
 }
 
 Stmt *Stmt::newReturn(Expr *expr, yy::location loc) {
-  return new Stmt(StmtKind::RETURN, expr, 0, 0, 0, 0, 0, loc);
+  return new Stmt(StmtKind::RETURN, expr, 0, 0, 0, 0, 0, 0, loc);
 }
 
 Stmt *Stmt::newContinue(yy::location loc) {
-  return new Stmt(StmtKind::CONTINUE, 0, 0, 0, 0, 0, 0, loc);
+  return new Stmt(StmtKind::CONTINUE, 0, 0, 0, 0, 0, 0, 0, loc);
 }
 
 Stmt *Stmt::newBreak(yy::location loc) {
-  return new Stmt(StmtKind::BREAK, 0, 0, 0, 0, 0, 0, loc);
+  return new Stmt(StmtKind::BREAK, 0, 0, 0, 0, 0, 0, 0, loc);
 }
 
-void Stmt::addChild(Stmt *s) { this->body.push_back(s); }
+void Stmt::addChild(Stmt *s) {
+  if (!this->next)
+    this->next = s;
+  else
+    this->next->addChild(s);
+}
 
 void Stmt::resolve() {
   switch (this->kind) {
@@ -61,10 +67,6 @@ void Stmt::resolve() {
     break;
   case StmtKind::EXPR:
     this->expr->resolve();
-    break;
-  case StmtKind::BLOCK:
-    for (Stmt *s : this->body)
-      s->resolve();
     break;
   case StmtKind::IF:
     this->expr->resolve();
@@ -75,7 +77,7 @@ void Stmt::resolve() {
   case StmtKind::FOR:
     this->init->resolve();
     this->expr->resolve();
-    this->next->resolve();
+    this->nextExpr->resolve();
     this->consequence->resolve();
     break;
   case StmtKind::WHILE:
@@ -88,10 +90,14 @@ void Stmt::resolve() {
     break;
   case StmtKind::BREAK:
   case StmtKind::CONTINUE:
+  case StmtKind::BLOCK:
     break;
   default:
     assert(0 && "resolve not implemented");
   }
+
+  if (this->next)
+    this->next->resolve();
 }
 
 void Stmt::typeCheck() {
@@ -101,11 +107,6 @@ void Stmt::typeCheck() {
     break;
   case StmtKind::DECL:
     this->decl->typeCheck();
-    break;
-  case StmtKind::BLOCK:
-    for (Stmt *s : this->body) {
-      s->typeCheck();
-    }
     break;
   case StmtKind::IF:
     this->expr->typeCheck();
@@ -121,7 +122,7 @@ void Stmt::typeCheck() {
   case StmtKind::FOR:
     this->expr->typeCheck();
     this->init->typeCheck();
-    this->next->typeCheck();
+    this->nextExpr->typeCheck();
     this->consequence->typeCheck();
     break;
   case StmtKind::BREAK:
@@ -130,9 +131,13 @@ void Stmt::typeCheck() {
     if (this->expr)
       this->expr->typeCheck();
     break;
+  case StmtKind::BLOCK:
   case StmtKind::CONTINUE:
     break;
   }
+
+  if (this->next)
+    this->next->typeCheck();
 }
 
 std::ostream &operator<<(std::ostream &os, Stmt *s) {
@@ -155,7 +160,7 @@ std::ostream &operator<<(std::ostream &os, Stmt *s) {
     os << "while " << s->expr << " " << s->consequence << "\n";
     break;
   case StmtKind::FOR:
-    os << "for " << s->init << "; " << s->expr << "; " << s->next << " "
+    os << "for " << s->init << "; " << s->expr << "; " << s->nextExpr << " "
        << s->consequence << "\n";
     break;
   case StmtKind::RETURN:
@@ -170,13 +175,14 @@ std::ostream &operator<<(std::ostream &os, Stmt *s) {
   case StmtKind::BLOCK:
     os << "{\n";
 
-    for (Stmt *s : s->body) {
-      os << s;
-    }
+    os << s->next;
 
     os << "}";
-    break;
+    return os;
   }
+
+  if (s->next)
+    os << s->next;
 
   return os;
 }
