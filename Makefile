@@ -17,8 +17,8 @@ all: parser scanner $(OBJECT_FILES)
 	$(CC) $(CFLAGS) -o $(OBJECT_DIR)/$(BINARY) $(OBJECT_FILES)
 
 quick:
-	make parser scanner
-	make binary -j8
+	make --no-print-directory parser scanner
+	make --no-print-directory binary -j8
 
 binary: $(OBJECT_FILES) 
 	$(CC) $(CFLAGS) -o $(OBJECT_DIR)/$(BINARY) $(OBJECT_FILES)

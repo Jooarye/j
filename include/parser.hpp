@@ -414,6 +414,7 @@ namespace yy {
       char dummy1[sizeof (Decl *)];
 
       // expr
+      // expr_id
       char dummy2[sizeof (Expr *)];
 
       // param
@@ -611,10 +612,11 @@ namespace yy {
         S_param = 53,                            // param
         S_type = 54,                             // type
         S_expr = 55,                             // expr
-        S_args = 56,                             // args
-        S_block = 57,                            // block
-        S_stmts = 58,                            // stmts
-        S_stmt = 59                              // stmt
+        S_expr_id = 56,                          // expr_id
+        S_args = 57,                             // args
+        S_block = 58,                            // block
+        S_stmts = 59,                            // stmts
+        S_stmt = 60                              // stmt
       };
     };
 
@@ -656,6 +658,7 @@ namespace yy {
         break;
 
       case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr_id: // expr_id
         value.move< Expr * > (std::move (that.value));
         break;
 
@@ -886,6 +889,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr_id: // expr_id
         value.template destroy< Expr * > ();
         break;
 
@@ -2143,8 +2147,8 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 336,     ///< Last index in yytable_.
-      yynnts_ = 14,  ///< Number of nonterminal symbols.
+      yylast_ = 307,     ///< Last index in yytable_.
+      yynnts_ = 15,  ///< Number of nonterminal symbols.
       yyfinal_ = 3 ///< Termination state number.
     };
 
@@ -2175,6 +2179,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr_id: // expr_id
         value.copy< Expr * > (YY_MOVE (that.value));
         break;
 
@@ -2249,6 +2254,7 @@ switch (yykind)
         break;
 
       case symbol_kind::S_expr: // expr
+      case symbol_kind::S_expr_id: // expr_id
         value.move< Expr * > (YY_MOVE (s.value));
         break;
 
@@ -2353,7 +2359,7 @@ switch (yykind)
 
 
 } // yy
-#line 2357 "include/parser.hpp"
+#line 2363 "include/parser.hpp"
 
 
 

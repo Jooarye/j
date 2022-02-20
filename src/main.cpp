@@ -1,6 +1,7 @@
 #include "ast.hpp"
 #include "ast/decl.hpp"
 #include "driver.hpp"
+#include "message.hpp"
 #include <iostream>
 #include <string>
 
@@ -8,9 +9,11 @@ int main(int argc, char *argv[]) {
   Driver drv;
 
   if (!drv.parse("spec.j")) {
-    std::cout << "=== INCLUDED FILES ===" << std::endl;
-    for (std::string file : drv.importedFiles) {
-      std::cout << file << std::endl;
+    drv.resolve();
+    drv.typeCheck();
+
+    for (Message m : messages) {
+      std::cerr << m;
     }
 
     std::cout << "======== AST =========" << std::endl;

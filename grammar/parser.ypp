@@ -84,7 +84,7 @@
 %token <float> FLOAT "float"
 %nterm <Decl *> decl
 %nterm <Stmt *> block stmts stmt
-%nterm <Expr *> expr
+%nterm <Expr *> expr expr_id
 %nterm <Type *> type
 %nterm <Param *> param
 %nterm <std::vector<Param *> *> params
@@ -109,10 +109,12 @@ decls:
 | decls decl { drv.ast.push_back($2); };
 
 decl:
-  "fn" "identifier" "(" params ")" block      { $$ = Decl::newFn($2, $6, Type::newComplex(TypeKind::FUNC, Type::newAtomic(TypeKind::NIL), $4)); }
-| "fn" "identifier" "(" params ")" type block { $$ = Decl::newFn($2, $7, Type::newComplex(TypeKind::FUNC, $6, $4)); }
-| type "identifier" "=" expr ";"              { $$ = Decl::newVar($2, $4, $1); }
-| type "identifier" ";"                       { $$ = Decl::newVar($2, 0, $1); };
+  "fn" "identifier" "(" params ")" block      { $$ = Decl::newFn($2, $6, Type::newComplex(TypeKind::FUNC, Type::newAtomic(TypeKind::NIL), $4), @1); }
+| "fn" "identifier" "(" params ")" type block { $$ = Decl::newFn($2, $7, Type::newComplex(TypeKind::FUNC, $6, $4), @1); }
+| "fn" "identifier" "(" params ")" ";"        { $$ = Decl::newFn($2, 0, Type::newComplex(TypeKind::FUNC, Type::newAtomic(TypeKind::NIL), $4), @1); }
+| "fn" "identifier" "(" params ")" type ";"   { $$ = Decl::newFn($2, 0, Type::newComplex(TypeKind::FUNC, $6, $4), @1); }
+| type "identifier" "=" expr ";"              { $$ = Decl::newVar($2, $4, $1, @1); }
+| type "identifier" ";"                       { $$ = Decl::newVar($2, 0, $1, @1); };
 
 params:
   %empty           { $$ = new std::vector<Param *>(); }
@@ -130,37 +132,40 @@ type:
 %right "~" "=" "not" "++" "--";
 %left "==" "!=" "<" ">" "<=" ">=" "+" "-" "*" "/" "&" "|" "^" "(" ")" "and" "or" "[";
 expr:
-  "integer" { $$ = Expr::newConst($1); }
-| "string"  { $$ = Expr::newConst($1); }
+  "integer" { $$ = Expr::newConst($1, @1); }
+| "string"  { $$ = Expr::newConst($1, @1); }
 
-| "identifier" "=" expr { $$ = Expr::newBinary(ExprKind::ASSIGN, Expr::newIdent($1), $3); }
+| expr_id "=" expr { $$ = Expr::newBinary(ExprKind::ASSIGN, $1, $3, @1); }
 
-| "not" expr      { $$ = Expr::newUnary(ExprKind::LNOT, $2); }
-| expr "and" expr { $$ = Expr::newBinary(ExprKind::LAND, $1, $3); }
-| expr "or" expr  { $$ = Expr::newBinary(ExprKind::LOR, $1, $3); }
+| "not" expr      { $$ = Expr::newUnary(ExprKind::LNOT, $2, @1); }
+| expr "and" expr { $$ = Expr::newBinary(ExprKind::LAND, $1, $3, @1); }
+| expr "or" expr  { $$ = Expr::newBinary(ExprKind::LOR, $1, $3, @1); }
 
-| expr "==" expr { $$ = Expr::newBinary(ExprKind::EQ, $1, $3); }
-| expr "!=" expr { $$ = Expr::newBinary(ExprKind::NE, $1, $3); }
-| expr "<=" expr { $$ = Expr::newBinary(ExprKind::LTEQ, $1, $3); }
-| expr ">=" expr { $$ = Expr::newBinary(ExprKind::GTEQ, $1, $3); }
-| expr "<" expr  { $$ = Expr::newBinary(ExprKind::LT, $1, $3); }
-| expr ">" expr  { $$ = Expr::newBinary(ExprKind::GT, $1, $3); }
+| expr "==" expr { $$ = Expr::newBinary(ExprKind::EQ, $1, $3, @1); }
+| expr "!=" expr { $$ = Expr::newBinary(ExprKind::NE, $1, $3, @1); }
+| expr "<=" expr { $$ = Expr::newBinary(ExprKind::LTEQ, $1, $3, @1); }
+| expr ">=" expr { $$ = Expr::newBinary(ExprKind::GTEQ, $1, $3, @1); }
+| expr "<" expr  { $$ = Expr::newBinary(ExprKind::LT, $1, $3, @1); }
+| expr ">" expr  { $$ = Expr::newBinary(ExprKind::GT, $1, $3, @1); }
 
-| expr "&" expr { $$ = Expr::newBinary(ExprKind::AND, $1, $3); }
-| expr "|" expr { $$ = Expr::newBinary(ExprKind::OR, $1, $3); }
-| expr "^" expr { $$ = Expr::newBinary(ExprKind::XOR, $1, $3); }
-| expr "+" expr { $$ = Expr::newBinary(ExprKind::ADD, $1, $3); }
-| expr "-" expr { $$ = Expr::newBinary(ExprKind::SUB, $1, $3); }
-| expr "*" expr { $$ = Expr::newBinary(ExprKind::MUL, $1, $3); }
-| expr "/" expr { $$ = Expr::newBinary(ExprKind::DIV, $1, $3); }
+| expr "&" expr { $$ = Expr::newBinary(ExprKind::AND, $1, $3, @1); }
+| expr "|" expr { $$ = Expr::newBinary(ExprKind::OR, $1, $3, @1); }
+| expr "^" expr { $$ = Expr::newBinary(ExprKind::XOR, $1, $3, @1); }
+| expr "+" expr { $$ = Expr::newBinary(ExprKind::ADD, $1, $3, @1); }
+| expr "-" expr { $$ = Expr::newBinary(ExprKind::SUB, $1, $3, @1); }
+| expr "*" expr { $$ = Expr::newBinary(ExprKind::MUL, $1, $3, @1); }
+| expr "/" expr { $$ = Expr::newBinary(ExprKind::DIV, $1, $3, @1); }
 
-| "~" expr                  { $$ = Expr::newUnary(ExprKind::NOT, $2); }
-| "identifier" "++"         { $$ = Expr::newUnary(ExprKind::INC, Expr::newIdent($1)); }
-| "identifier" "--"         { $$ = Expr::newUnary(ExprKind::DEC, Expr::newIdent($1)); }
-| "(" expr ")"              { $$ = $2; }
-| "identifier" "[" expr "]" { $$ = Expr::newBinary(ExprKind::INDEX, Expr::newIdent($1), $3); }
-| "identifier" "(" args ")" { $$ = Expr::newBinary(ExprKind::CALL, Expr::newIdent($1), Expr::newArgs($3)); }
-| "identifier"              { $$ = Expr::newIdent($1); };
+| "~" expr             { $$ = Expr::newUnary(ExprKind::NOT, $2, @1); }
+| expr_id "++"         { $$ = Expr::newUnary(ExprKind::INC, $1, @1); }
+| expr_id "--"         { $$ = Expr::newUnary(ExprKind::DEC, $1, @1); }
+| "(" expr ")"         { $$ = $2; }
+| expr_id              { $$ = $1; }
+| expr_id "[" expr "]" { $$ = Expr::newBinary(ExprKind::INDEX, $1, $3, @1); }
+| expr_id "(" args ")" { $$ = Expr::newBinary(ExprKind::CALL, $1, Expr::newArgs($3, @3), @1); };
+
+expr_id:
+  "identifier" { $$ = Expr::newIdent($1, @1); };
 
 args:
   %empty        { $$ = new std::vector<Expr *>(); }
@@ -168,24 +173,25 @@ args:
 | args "," expr { $$ = $1; $1->push_back($3); };
 
 block:
-  "{" stmts "}" { $$ = $2; };
+  "{" stmts "}" { $$ = $2; $$->loc = @1; };
 
 stmts:
-  %empty     { $$ = Stmt::newBlock(); }
+  %empty     { $$ = Stmt::newBlock(@0); }
 | stmts stmt { $$ = $1; $$->addChild($2); };
 
 stmt:
-  decl     { $$ = Stmt::newDecl($1); }
-| expr ";" { $$ = Stmt::newExpr($1); }
+  decl     { $$ = Stmt::newDecl($1, @1); }
+| expr ";" { $$ = Stmt::newExpr($1, @1); }
 
-| "return" expr ";" { $$ = Stmt::newReturn($2); }
+| "return" expr ";" { $$ = Stmt::newReturn($2, @1); }
+| "return" ";"      { $$ = Stmt::newReturn(0, @1); }
 
-| "if" expr block              { $$ = Stmt::newIf($2, $3, 0); }
-| "if" expr block "else" block { $$ = Stmt::newIf($2, $3, $5); }
+| "if" expr block              { $$ = Stmt::newIf($2, $3, 0, @1); }
+| "if" expr block "else" block { $$ = Stmt::newIf($2, $3, $5, @1); }
 
-| "while" expr block { $$ = Stmt::newWhile($2, $3); }
+| "while" expr block { $$ = Stmt::newWhile($2, $3, @1); }
 
-| "for" expr ";" expr ";" expr block { $$ = Stmt::newFor($2, $4, $6, $7); };
+| "for" expr ";" expr ";" expr block { $$ = Stmt::newFor($2, $4, $6, $7, @1); };
 %%
 
 void yy::parser::error (const location_type& l, const std::string& m) {
