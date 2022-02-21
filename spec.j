@@ -9,21 +9,21 @@ fn stoi(str num) int {
     result = result + pow(10, idx) * (num[idx] - 48);
   }
 
-  return result;
+  ret result;
 }
 
 fn fib(int n) int {
   if n < 2 {
-    return 1;
+    ret 1;
   }
 
-  return fib(n - 1) + fib(n - 2);
+  ret fib(n - 1) + fib(n - 2);
 }
 
 fn main(int argc, str[] argv) int {
   if argc != 2 {
     prints("usage: prog <num>\n");
-    return 1;
+    ret 1;
   }
 
   int number = stoi(argv[1]);
@@ -32,5 +32,5 @@ fn main(int argc, str[] argv) int {
   prints("result: ");
   printi(result);
   prints("\n");
-  return 0;
+  ret 0;
 }

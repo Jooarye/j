@@ -10,6 +10,7 @@
 
 %code requires {
   #include <string>
+  #include <filesystem>
   #include "ast.hpp"
   class Driver;
 }
@@ -39,7 +40,7 @@
   ELSE      "else"
   WHILE     "while"
   FOR       "for"
-  RETURN    "return"
+  RETURN    "ret"
 
   AT        "@"
   IMPORT    "import"
@@ -181,8 +182,8 @@ stmt:
   decl     { $$ = Stmt::newDecl($1, @1); }
 | expr ";" { $$ = Stmt::newExpr($1, @1); }
 
-| "return" expr ";" { $$ = Stmt::newReturn($2, @1); }
-| "return" ";"      { $$ = Stmt::newReturn(0, @1); }
+| "ret" expr ";" { $$ = Stmt::newReturn($2, @1); }
+| "ret" ";"      { $$ = Stmt::newReturn(0, @1); }
 
 | "if" expr block              { $$ = Stmt::newIf($2, $3, 0, @1); }
 | "if" expr block "else" block { $$ = Stmt::newIf($2, $3, $5, @1); }
@@ -193,5 +194,9 @@ stmt:
 %%
 
 void yy::parser::error (const location_type& l, const std::string& m) {
-  std::cerr << l << ": " << m << std::endl;
+  std::string fn = std::filesystem::relative(*l.begin.filename,
+                                              std::filesystem::current_path());
+
+  std::cerr << fn << ":" << l.begin.line << ":" 
+            << l.begin.column << ": error: " << m << std::endl;
 }

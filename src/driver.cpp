@@ -22,6 +22,9 @@ int Driver::parse(const std::string &f) {
 
   scan_end();
 
+  if (res != 0)
+    return res;
+
   for (std::string ifile : this->importedFiles) {
     if (std::find(this->handledFiles.begin(), this->handledFiles.end(),
                   ifile) != this->handledFiles.end())

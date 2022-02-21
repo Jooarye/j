@@ -119,7 +119,7 @@ comment \/\/.*?\n
 "else"      return yy::parser::make_ELSE(loc);
 "while"     return yy::parser::make_WHILE(loc);
 "for"       return yy::parser::make_FOR(loc);
-"return"    return yy::parser::make_RETURN(loc);
+"ret"       return yy::parser::make_RETURN(loc);
 "import"    return yy::parser::make_IMPORT(loc);
 
 "@"         return yy::parser::make_AT(loc);
